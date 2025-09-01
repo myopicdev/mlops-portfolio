@@ -37,10 +37,11 @@ variable "db_username" {
   type    = string
   default = "raguser"
 }
-variable "db_password" {
-  type      = string
-  sensitive = true
+variable "app_username" {
+  type    = string
+  default = "appuser"
 }
+
 variable "db_instance_class" {
   type    = string
   default = "db.t4g.medium"
@@ -53,4 +54,5 @@ variable "db_allocated_storage" {
 # Dev-only: allow psql from your home IP (e.g. "X.X.X.X/32")
 variable "allowed_cidr_home" {
   type = string
+  default = "136.49.124.114/32"
 }

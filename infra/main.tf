@@ -82,6 +82,13 @@ resource "aws_route_table_association" "public_b" {
   route_table_id = aws_route_table.public.id
 }
 
+resource "aws_route_table_association" "private_a" {
+  subnet_id      = aws_subnet.private_a.id
+  route_table_id = aws_route_table.public.id
+}
+
+
+
 # ---------------- S3 bucket ----------------
 resource "aws_s3_bucket" "docs" {
   bucket = "${local.name}-docs-${random_id.suffix.hex}"
@@ -156,7 +163,7 @@ resource "aws_db_instance" "postgres" {
   publicly_accessible     = false
   multi_az                = false
   username                = var.db_username
-  password                = var.db_password
+  password                = data.aws_secretsmanager_secret_version.db_password.secret_string
   db_name                 = var.db_name
   backup_retention_period = 1
   skip_final_snapshot     = true
@@ -165,6 +172,8 @@ resource "aws_db_instance" "postgres" {
   storage_encrypted       = true
   tags                    = local.tags
 }
+
+
 
 # -----------------------------
 # IAM Role for EC2 (SSM access)
@@ -192,7 +201,22 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   name = "${local.name}-ec2-ssm-profile"
   role = aws_iam_role.ec2_ssm_role.name
 }
+# -----------------------------
+# Set up PostgreSQL roles and grants
+# -----------------------------
+resource "postgresql_role" "app_user" {
+  name     = var.app_username
+  login    = true
+  password = data.aws_secretsmanager_secret_version.db_password.secret_string
+}
 
+resource "postgresql_grant" "app_user_grant" {
+  role        = postgresql_role.app_user.name
+  database    = var.db_name
+  object_type = "schema"
+  schema      = "public"
+  privileges  = ["USAGE", "CREATE"]
+}
 # -----------------------------
 # Security Group for EC2
 # -----------------------------
@@ -220,11 +244,28 @@ resource "aws_instance" "ssm_ec2" {
   vpc_security_group_ids = [aws_security_group.ec2_private_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_ssm_profile.name
 
-  associate_public_ip_address = false
+  associate_public_ip_address = true
 
   tags = merge(local.tags, {
     Name = "${local.name}-ssm-ec2"
   })
+
+user_data = <<-EOF
+    #!/bin/bash
+    set -eux
+
+    # Update system
+    sudo yum update -y
+
+    # Enable Amazon Linux Extras for PostgreSQL 14
+    sudo amazon-linux-extras enable postgresql14
+
+    # Install PostgreSQL client
+    sudo yum install -y postgresql postgresql-contrib
+
+    # Verify installation
+    psql --version
+  EOF
 }
 
 # -----------------------------
@@ -239,10 +280,4 @@ data "aws_ami" "amazon_linux2" {
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
-# -----------------------------
-# Output: SSM Command
-# -----------------------------
-output "ssm_connect_command" {
-  description = "Run this command to connect to the private EC2 via SSM"
-  value       = "aws ssm start-session --target ${aws_instance.ssm_ec2.id}"
-}
+
