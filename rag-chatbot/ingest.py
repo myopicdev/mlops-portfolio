@@ -14,9 +14,29 @@ def get_secret(secret_name):
     except json.JSONDecodeError:
         return secret 
 
+def get_secret_json(secret_name: str, region: str | None = None) -> dict:
+    """
+    Fetches a secret from AWS Secrets Manager and always parses JSON.
+    Raises if the secret is not valid JSON.
+    """
+    session = boto3.session.Session(region_name=region or os.getenv("AWS_REGION"))
+    client = session.client("secretsmanager")
+    resp = client.get_secret_value(SecretId=secret_name)
+
+    secret_str = resp.get("SecretString")
+    if not secret_str:
+        raise ValueError(f"Secret {secret_name} has no SecretString")
+
+    try:
+        return json.loads(secret_str)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Secret {secret_name} is not valid JSON: {e}")
+    
 # Load secrets
 db_secret = get_secret("rds-master-password")
-openai.api_key = get_secret("openai-api-key")
+
+
+openai.api_key = get_secret_json("openai-api-key")
 
 print("after api keys")
 # DB connection
