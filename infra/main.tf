@@ -244,7 +244,7 @@ user_data = <<-EOF
 
     # Install PostgreSQL client
     sudo yum install -y git python3-pip postgresql17 jq unzip wget tar postgresql17-contrib
-    python3 -m pip install boto3 psycopg2-binary openai langchain pypdf pandas tiktoken
+    python3 -m pip install boto3 psycopg2-binary openai langchain pypdf pandas tiktoken dotenv
 
     # Verify installation
     psql --version

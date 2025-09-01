@@ -25,6 +25,7 @@ conn = psycopg2.connect(
     sslmode="require"
 )
 cur = conn.cursor()
+print("Connected to the database")
 
 openai.api_key = openai_secret['openai-api-key']
 
