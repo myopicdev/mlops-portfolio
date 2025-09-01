@@ -13,7 +13,7 @@ data "aws_secretsmanager_secret_version" "db_password" {
 # -----------------------------
 
 data "aws_secretsmanager_secret" "openai_key" {
-  name = "openai_api_key"
+  name = "openai-api-key"
 }
 
 data "aws_secretsmanager_secret_version" "openai_key" {
