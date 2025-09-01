@@ -8,14 +8,16 @@ client = session.client(service_name='secretsmanager')
 
 def get_secret(secret_name):
     response = client.get_secret_value(SecretId=secret_name)
-    return response['SecretString']
+    secret = response["SecretString"]
+    try:
+        return json.loads(secret)  # for JSON secrets
+    except json.JSONDecodeError:
+        return secret 
 
-# Load DB creds
+# Load secrets
 db_secret = get_secret("rds-master-password")
+openai.api_key = get_secret("openai-api-key")
 
-# Load OpenAI API key
-openai_secret = get_secret("openai-api-key")
-openai.api_key = openai_secret["openai-api-key"]
 print("after api keys")
 # DB connection
 conn = psycopg2.connect(
