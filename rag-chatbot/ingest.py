@@ -6,17 +6,11 @@ load_dotenv()  # take environment variables from .env
 session = boto3.session.Session()
 client = session.client(service_name='secretsmanager')
 
-def get_secret(secret_name):
-    response = client.get_secret_value(SecretId=secret_name)
-    secret = response["SecretString"]
-    try:
-        return json.loads(secret)  # for JSON secrets
-    except json.JSONDecodeError:
-        return secret 
-
 # Load secrets
 db_secret = get_secret("rds-master-password")
-openai.api_key = get_secret("openai-api-key")
+openai_secret = get_secret_json("openai-api-key")
+openai_api_key = openai_secret["api_key"]
+
 
 print("after api keys")
 # DB connection
