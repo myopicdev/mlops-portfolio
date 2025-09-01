@@ -15,19 +15,19 @@ db_secret = get_secret("rds-master-password")
 
 # Load OpenAI API key
 openai_secret = get_secret("openai-api-key")
-
+openai.api_key = openai_secret["openai-api-key"]
+print("after api keys")
 # DB connection
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
     dbname=os.getenv("PGDATABASE"),
     user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
+    password=db_secret["password"],
     sslmode="require"
 )
+print("Connected to the database1")
 cur = conn.cursor()
-print("Connected to the database")
-
-openai.api_key = openai_secret['openai-api-key']
+print("Connected to the database2")
 
 
 def embed_text(text):
