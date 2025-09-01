@@ -24,7 +24,7 @@ conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
     dbname=os.getenv("PGDATABASE"),
     user=os.getenv("PGUSER"),
-    password=db_secret["password"],
+    password=db_secret,
     sslmode="require"
 )
 print("Connected to the database1")
