@@ -1,6 +1,8 @@
 import boto3, json, os, psycopg2, openai
 from pypdf import PdfReader
 from dotenv import load_dotenv  
+from typing import Optional, Dict
+
 load_dotenv()  # take environment variables from .env
 
 session = boto3.session.Session()
@@ -14,7 +16,7 @@ def get_secret(secret_name):
     except json.JSONDecodeError:
         return secret 
 
-def get_secret_json(secret_name: str, region: str | None = None) -> dict:
+def get_secret_json(secret_name: str, region: Optional[str] = None) -> Dict:
     """
     Fetches a secret from AWS Secrets Manager and always parses JSON.
     Raises if the secret is not valid JSON.
