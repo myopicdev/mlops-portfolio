@@ -3,8 +3,6 @@ from pypdf import PdfReader
 from dotenv import load_dotenv  
 load_dotenv()  # take environment variables from .env
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
 session = boto3.session.Session()
 client = session.client(service_name='secretsmanager')
 
@@ -16,7 +14,7 @@ def get_secret(secret_name):
 db_secret = get_secret("rds-master-password")
 
 # Load OpenAI API key
-openai_secret = get_secret("openai_api_key")
+openai_secret = get_secret("openai-api-key")
 
 # DB connection
 conn = psycopg2.connect(
@@ -28,7 +26,7 @@ conn = psycopg2.connect(
 )
 cur = conn.cursor()
 
-openai.api_key = openai_secret['openai_api_key']
+openai.api_key = openai_secret['openai-api-key']
 
 
 def embed_text(text):
