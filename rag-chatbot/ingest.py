@@ -37,8 +37,11 @@ def get_secret_json(secret_name: str, region: Optional[str] = None) -> Dict:
 # Load secrets
 db_secret = get_secret("rds-master-password")
 
+openai_secret = get_secret_json("openai-api-key")
+openai_api_key = openai_secret["api_key"]
 
-openai.api_key = get_secret_json("openai-api-key")
+from openai import OpenAI
+client = OpenAI(api_key=openai_api_key)
 
 print("after api keys")
 # DB connection
