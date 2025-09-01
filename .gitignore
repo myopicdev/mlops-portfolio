@@ -11,3 +11,4 @@ venv/
 .env.*
 # Misc
 .DS_Store
+tfplan*
