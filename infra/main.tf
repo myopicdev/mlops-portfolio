@@ -201,22 +201,7 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   name = "${local.name}-ec2-ssm-profile"
   role = aws_iam_role.ec2_ssm_role.name
 }
-# -----------------------------
-# Set up PostgreSQL roles and grants
-# -----------------------------
-resource "postgresql_role" "app_user" {
-  name     = var.app_username
-  login    = true
-  password = data.aws_secretsmanager_secret_version.db_password.secret_string
-}
 
-resource "postgresql_grant" "app_user_grant" {
-  role        = postgresql_role.app_user.name
-  database    = var.db_name
-  object_type = "schema"
-  schema      = "public"
-  privileges  = ["USAGE", "CREATE"]
-}
 # -----------------------------
 # Security Group for EC2
 # -----------------------------
@@ -238,7 +223,7 @@ resource "aws_security_group" "ec2_private_sg" {
 # Private EC2 instance
 # -----------------------------
 resource "aws_instance" "ssm_ec2" {
-  ami                    = data.aws_ami.amazon_linux2.id
+  ami                    = data.aws_ami.amazon_linux2023.id
   instance_type          = "t3.micro"
   subnet_id              = aws_subnet.private_a.id
   vpc_security_group_ids = [aws_security_group.ec2_private_sg.id]
@@ -257,11 +242,9 @@ user_data = <<-EOF
     # Update system
     sudo yum update -y
 
-    # Enable Amazon Linux Extras for PostgreSQL 14
-    sudo amazon-linux-extras enable postgresql14
-
     # Install PostgreSQL client
-    sudo yum install -y postgresql postgresql-contrib
+    sudo yum install -y git python3-pip postgresql17 jq unzip wget tar postgresql17-contrib
+    python3 -m pip install boto3 psycopg2-binary openai langchain pypdf pandas tiktoken
 
     # Verify installation
     psql --version
@@ -269,15 +252,15 @@ user_data = <<-EOF
 }
 
 # -----------------------------
-# AMI Lookup (Amazon Linux 2)
+# AMI Lookup (Amazon Linux 2023)
 # -----------------------------
-data "aws_ami" "amazon_linux2" {
+data "aws_ami" "amazon_linux2023" {
   most_recent = true
   owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["al2023-ami-*-x86_64"]
   }
 }
 

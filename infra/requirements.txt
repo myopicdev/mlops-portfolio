@@ -1,0 +1,7 @@
+boto3
+psycopg2-binary
+openai
+langchain
+pypdf
+pandas
+tiktoken
