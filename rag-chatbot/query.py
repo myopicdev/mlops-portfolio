@@ -5,8 +5,8 @@ from typing import Optional, Dict
 
 load_dotenv()  # take environment variables from .env
 
-session = boto3.session.Session()
-client = session.client(service_name='secretsmanager')
+session = boto3.session.Session(region_name=os.getenv("AWS_REGION", "us-east-1"))
+sm_client = session.client("secretsmanager")
 
 def get_secret(secret_name):
     response = client.get_secret_value(SecretId=secret_name)
