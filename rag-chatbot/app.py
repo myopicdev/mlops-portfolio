@@ -57,7 +57,7 @@ print("Connected to the database1")
 cur = conn.cursor()
 
 # ---------- OpenAI Client ----------
-client = OpenAI(api_key=openai_secret["api_key"])
+client = openai(api_key=openai_secret["api_key"])
 
 
 class Query(BaseModel):
