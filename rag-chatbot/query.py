@@ -1,5 +1,7 @@
 import boto3, json, os, psycopg2, openai
+from pypdf import PdfReader
 from dotenv import load_dotenv  
+from typing import Optional, Dict
 
 load_dotenv()  # take environment variables from .env
 
