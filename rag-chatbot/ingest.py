@@ -62,11 +62,14 @@ def embed_text(text):
     )
     return response["data"][0]["embedding"]
 
-def store_document(content):
-    embedding = embed_text(content)
+def store_document(content: str):
+    embedding = embed_text(content)  # returns a Python list of floats
     cur.execute(
-        "INSERT INTO documents (content, embedding) VALUES (%s, %s)",
-        (content, embedding)
+        """
+        INSERT INTO documents (content, embedding)
+        VALUES (%s, %s::vector)
+        """,
+        (content, embedding)  # psycopg2 sends list → numeric[]
     )
     conn.commit()
 

@@ -56,31 +56,52 @@ conn = psycopg2.connect(
 print("Connected to the database1")
 cur = conn.cursor()
 
+# ---------- OpenAI Client ----------
+client = OpenAI(api_key=openai_secret["api_key"])
+
 
 class Query(BaseModel):
     question: str
 
-def retrieve_context(query, k=3):
-    q_embed = openai.Embedding.create(
-        input=query,
-        model="text-embedding-ada-002"
-    )["data"][0]["embedding"]
+# ---------- Helper Functions ----------
+def embed_text(text: str):
+    resp = client.embeddings.create(
+        input=text,
+        model="text-embedding-ada-002"   # or text-embedding-3-small/large
+    )
+    return resp.data[0].embedding
 
-    cur.execute("""
+def retrieve_context(query_embedding, top_k: int = 5):
+    cur.execute(
+        """
         SELECT content
         FROM documents
-        ORDER BY embedding <-> %s
-        LIMIT %s;
-    """, (q_embed, k))
-    return [r[0] for r in cur.fetchall()]
+        ORDER BY embedding <-> %s::vector
+        LIMIT %s
+        """,
+        (query_embedding, top_k)
+    )
+    results = [row[0] for row in cur.fetchall()]
+    return results
+
+
 
 @app.post("/chat")
 def chat(query: Query):
-    context = retrieve_context(query.question)
-    prompt = f"Use the following context to answer:\n\n{context}\n\nQuestion: {query.question}"
+    # 1. Embed the user question
+    q_embedding = embed_text(query.question)
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
+    # 2. Retrieve similar documents
+    context = retrieve_context(q_embedding, top_k=3)
+    combined_context = "\n".join(context)
+
+    # 3. Call OpenAI with context + question
+    completion = client.chat.completions.create(
+        model="gpt-4o-mini",   # or gpt-4o, gpt-3.5-turbo
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that answers based on provided context."},
+            {"role": "user", "content": f"Context:\n{combined_context}\n\nQuestion: {query.question}"}
+        ]
     )
-    return {"answer": response["choices"][0]["message"]["content"]}
+    answer = completion.choices[0].message.content
+    return {"question": query.question, "answer": answer, "context": context}
