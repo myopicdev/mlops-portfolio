@@ -63,13 +63,12 @@ def search(query):
     )["data"][0]["embedding"]
 
     # Search using cosine distance operator (<-> in pgvector)
-    cur.execute("""
-        SELECT content
-        FROM documents
-        ORDER BY embedding <-> %s
-        LIMIT 3;
-    """, (q_embed,))
-    return cur.fetchall()
+cur.execute("""
+    SELECT content
+    FROM documents
+    ORDER BY embedding <-> %s::vector
+    LIMIT 3;
+""", (q_embed,))
 
 if __name__ == "__main__":
     results = search("Summarize the document")
