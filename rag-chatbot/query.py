@@ -56,19 +56,20 @@ print("Connected to the database2")
 
 
 def search(query):
-    # Get embedding for the query
+    # Embed the query
     q_embed = openai.Embedding.create(
         input=query,
         model="text-embedding-ada-002"
     )["data"][0]["embedding"]
 
-    # Search using cosine distance operator (<-> in pgvector)
-cur.execute("""
-    SELECT content
-    FROM documents
-    ORDER BY embedding <-> %s::vector
-    LIMIT 3;
-""", (q_embed,))
+    # Query the DB
+    cur.execute("""
+        SELECT content
+        FROM documents
+        ORDER BY embedding <-> %s::vector
+        LIMIT 3;
+    """, (q_embed,))
+    return cur.fetchall()
 
 if __name__ == "__main__":
     results = search("Summarize the document")
