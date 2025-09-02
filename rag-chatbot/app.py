@@ -9,10 +9,10 @@ app = FastAPI()
 load_dotenv()  # take environment variables from .env
 
 session = boto3.session.Session()
-client = session.client(service_name='secretsmanager')
+sm_client = session.client(service_name='secretsmanager')
 
 def get_secret(secret_name):
-    response = client.get_secret_value(SecretId=secret_name)
+    response = sm_client.get_secret_value(SecretId=secret_name)
     secret = response["SecretString"]
     try:
         return json.loads(secret)  # for JSON secrets
@@ -25,7 +25,7 @@ def get_secret_json(secret_name: str, region: Optional[str] = None) -> Dict:
     Raises if the secret is not valid JSON.
     """
     session = boto3.session.Session(region_name=region or os.getenv("AWS_REGION"))
-    client = session.client("secretsmanager")
+    client = session.sm_client("secretsmanager")
     resp = client.get_secret_value(SecretId=secret_name)
 
     secret_str = resp.get("SecretString")
