@@ -91,13 +91,15 @@ def chat(query: Query):
     context = retrieve_context(q_embedding, top_k=3)
     combined_context = "\n".join(context)
 
-    # 3. Call OpenAI with context + question
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",   # or gpt-4o, gpt-3.5-turbo
+    # 3. Ask OpenAI
+    completion = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",   # or "gpt-4"
         messages=[
             {"role": "system", "content": "You are a helpful assistant that answers based on provided context."},
             {"role": "user", "content": f"Context:\n{combined_context}\n\nQuestion: {query.question}"}
         ]
     )
-    answer = completion.choices[0].message.content
+
+    answer = completion["choices"][0]["message"]["content"]
+
     return {"question": query.question, "answer": answer, "context": context}
