@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import os, psycopg2, openai, boto3, json
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
+from typing import Optional, Dict 
 
 app = FastAPI()
 
