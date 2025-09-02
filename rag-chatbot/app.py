@@ -25,7 +25,7 @@ def get_secret_json(secret_name: str, region: Optional[str] = None) -> Dict:
     Raises if the secret is not valid JSON.
     """
     session = boto3.session.Session(region_name=region or os.getenv("AWS_REGION"))
-    client = session.sm_client("secretsmanager")
+    sm_client = session.client("secretsmanager")
     resp = client.get_secret_value(SecretId=secret_name)
 
     secret_str = resp.get("SecretString")
