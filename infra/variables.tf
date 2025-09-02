@@ -51,8 +51,3 @@ variable "db_allocated_storage" {
   default = 50
 }
 
-# Dev-only: allow psql from your home IP (e.g. "X.X.X.X/32")
-variable "allowed_cidr_home" {
-  type = string
-  default = "136.49.124.114/32"
-}

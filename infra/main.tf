@@ -110,14 +110,7 @@ resource "aws_security_group" "rds_sg" {
   vpc_id      = aws_vpc.this.id
   tags        = local.tags
 
-  # Dev: allow from your home IP
-  ingress {
-    description = "psql from home"
-    from_port   = 5432
-    to_port     = 5432
-    protocol    = "tcp"
-    cidr_blocks = [var.allowed_cidr_home]
-  }
+
 
   # Allow from inside VPC (for future services like Lambda/EKS)
   ingress {
