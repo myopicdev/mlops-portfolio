@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+mangum
+boto3
+psycopg2-binary
+openai
+langchain
+pypdf
+pandas
+tiktoken
