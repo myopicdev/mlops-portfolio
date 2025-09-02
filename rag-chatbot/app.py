@@ -62,11 +62,11 @@ class Query(BaseModel):
 
 # ---------- Helper Functions ----------
 def embed_text(text: str):
-    resp = client.embeddings.create(
+    resp = openai.Embedding.create(
         input=text,
-        model="text-embedding-ada-002"   # or text-embedding-3-small/large
+        model="text-embedding-ada-002"
     )
-    return resp.data[0].embedding
+    return resp["data"][0]["embedding"]
 
 def retrieve_context(query_embedding, top_k: int = 5):
     cur.execute(
@@ -78,8 +78,7 @@ def retrieve_context(query_embedding, top_k: int = 5):
         """,
         (query_embedding, top_k)
     )
-    results = [row[0] for row in cur.fetchall()]
-    return results
+    return [row[0] for row in cur.fetchall()]
 
 
 
