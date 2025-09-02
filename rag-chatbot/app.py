@@ -56,9 +56,6 @@ conn = psycopg2.connect(
 print("Connected to the database1")
 cur = conn.cursor()
 
-# ---------- OpenAI Client ----------
-client = openai(api_key=openai_secret["api_key"])
-
 
 class Query(BaseModel):
     question: str
